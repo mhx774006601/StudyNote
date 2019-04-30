@@ -1,0 +1,37 @@
+
+	 let userName = localStorage.getItem('userName')
+	this.state={
+           
+            userName:userName, //根据不同用户登录，只提示一次
+            
+            ccVersion: 1.1,
+        }
+
+	componentDidMount(){
+		 //系统进来弹出消息
+                if (this.state.ccVersion !== Number(cookie.load('ccVersion')) || this.state.userName !== cookie.load('userName')) {
+                this.ccVersionModel();
+                cookie.save('ccVersion', this.state.ccVersion)
+                cookie.save('userName', this.state.userName)
+                }
+
+	}
+
+
+	//首页登录后弹窗的发版信息弹窗
+     ccVersionModel = () => {
+        Modal.info({
+          title: 'PaaS平台新版1.X.1上线了！',
+          content: (
+            <div>
+              <Badge status="processing" text="新增系统管理员添加环境，新建应用，发布功能" /><br />
+              <Badge status="processing" text="新增修改应用功能，查看详情页面" /><br />
+              <Badge status="processing" text="新增租户查看项目和应用，修改应用，运行功能" /><br />
+            </div>
+          ),
+          onOk() {},
+        });
+      }
+
+
+　　这些代码加到系统主界面，便可，根据不同的用户的登录，只提示一次系统发版信息

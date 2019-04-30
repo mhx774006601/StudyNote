@@ -1,0 +1,10 @@
+   
+	react项目布置到测试环境下，出现的问题：
+
+	１.　刷新页面，报 404 not found
+
+            方法一：　前端页面代码　把路由　BrowserRouter 的引入方式   import {BrowserRouter as Router, Route, Link,} from "react-router-dom";
+
+		改为 HashRouter 方式： import { HashRouter as Router, Route, Link,} from "react-router-dom";
+
+        即可。
