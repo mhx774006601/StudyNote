@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>跨系统跨项目之间的传值问题</title>
+	</head>
+	<body>
+		<p>工作中难免会遇到多个项目之间互相传值问题，这样就可以通过请求地址栏传参，或者localstorage,session,cookie等方式来作为桥梁进行传送数据</p>
+		<p>现在我说一下关于skywalking开源项目和自己开发的项目进行传值的一种方式</p>
+		<p>首先先放一下skywalking项目中的页面部分代码，这部分代码是负责发送数据出去的。首先要在当前这个页面拿到要发送出去的数据，先把值拿出来，然后再通过跳转页面的方式把它送出去</p>
+		<p>这次是通过url地址上传参数的形式把数据带出去的</p>
+		<p>下面是skywalking页面上的部分代码</p>	
+		<div style='border:1px solid #000;background: #f2f2f2;padding:10px;'>
+			<button @click="logSearch()" class="logBtn" >日志查询</button>
+			<p style="font-size: 11px;color: red;line-height: 24px;">
+				通过点击这个按钮拿到数据traceid,再把这个id作业一个参数调后台接口，得到第二组数据。
+				
+			</p>
+			<p>
+				<h4>以下这个代码是写在typescript+vue组合的项目中的，方法是使用在“日志查询”按钮上</h4>
+				
+				     public logSearch(){
+				         var txt=document.querySelector('#traceSel') as HTMLInputElement;
+				         var optVal = txt.value;
+				        <!--//拿到下拉框中的traceId,作为参数传到接口上-->
+				         axios.post('graphql',{query:`query queryAppNameAndIP($traceId: ID!)
+				         {appNameAndIP: queryAppNameAndIP(traceId: $traceId)
+				             {  traceId
+				                 appName
+				                 ip
+				             }}`,variables:{traceId: optVal }
+				         }).then(function (data:any) {
+				             console.log(data)
+				             console.log(data.data.data.appNameAndIP);
+				             var ss =  data.data.data.appNameAndIP;
+				             <!--//通过传过来的traceId,得到第二组数据appNameAndIP,保存在ss中，再把第二组数据作为参数传到第二个页面中
+				             //此时进行两个系统之间的页面跳转-->
+				              <!--// 下面的方式　是数据拿到后，带着数据跳到第二个页面中，既输入第二个页面所在项目的完整地址，并且加上参数
+				                //这个参数就是拿到手的appNameAndIP-->
+				                 window.location.href = 'http://localhost:8080/page/module/log-manage/log-search.html?appNameAndIP='+JSON.stringify(ss);
+				             				
+				         })
+				
+				    }
+			</p>
+		</div>
+		<div style="margin:100px 0 0 0;border:1px solid #000;background:#F0FFFF;padding:10px;">
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+			    <meta charset="UTF-8">
+			    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+			    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+			    <title>Document</title>
+
+			    <script type="text/javascript" src="jquery-3.4.1.min.js"></script>
+			    <script src="layui/dist/layui.all.js"></script>
+			    <link href="layui/dist/css/layui.css" />
+
+			</head>
+			<body>
+			       <div id='list'>
+			      <p style="color: red;font-size: 40px;"> 
+			      	日志查询页面--第二个项目中的页面
+			      </p>  
+			        <form class="layui-form" action="">
+			            <div class="layui-form-item">
+			                <div class="layui-inline">
+			                    <label class="layui-form-label">traceId</label>
+			                    <div class="layui-input-block">
+			                        <select name="traceId" id="traceId">
+			                            <option value=""></option>
+			                        </select>
+			                    </div>
+			                </div>
+			                <div class="layui-inline">
+			                    <label class="layui-form-label">appName</label>
+			                    <div class="layui-input-block">
+			                        <select name="appName" id="appName">
+			                            <option value=""></option>
+			                        </select>
+			                    </div>
+			                </div>
+			                <div class="layui-inline">
+			                    <label class="layui-form-label">ip</label>
+			                    <div class="layui-input-block">
+			                        <select name="ip" id="ip">
+			                            <option value=""></option>
+			                        </select>
+			                    </div>
+			                </div>
+			              
+			            </div>
+			        </form>
+			    </div>
+			</body>
+			</html>
+			<script>
+			  layui.use(['layer','form','laydate'], function () {
+			                var layer = layui.layer;
+			                var form = layui.form;
+			                var $ = layui.jquery;
+			                var laydate = layui.laydate;
+			
+			                  //渲染所有表单元素
+			               form.render();
+			            function GetRequest() { 
+			                var url = location.search; //获取url中"?"符后的字串 
+			                console.log(url)
+			                var theRequest = new Object(); 
+			                if (url.indexOf("?") != -1) { 
+			                var str = url.substr(1); 
+			                strs = str.split("&"); 
+			                for(var i = 0; i < strs.length; i ++) { 
+			                theRequest[strs[i].split("=")[0]]=unescape(strs[i].split("=")[1]); 
+			            } 
+			            } 
+			            return theRequest; 
+			            } 
+			            var Request = new Object(); 
+			            Request = GetRequest(); 
+			            var appNameAndIP; 
+			            name = Request['appNameAndIP']; 
+			            var arr = JSON.parse(name);
+			
+			            if(arr.length>0){
+			                $("#traceId").empty();//清空下拉框
+			                $("#appName").empty();//清空下拉框
+			                $("#ip").empty();//清空下拉框
+			                $("#traceId").append("<option value=''>--请选择--</option>");
+			                $("#appName").append("<option value=''>--请选择--</option>");
+			                $("#ip").append("<option value='0'>--请选择--</option>");
+			                for(var i=0;i<arr.length;i++){
+			                    var item=arr[i];
+			                    $("#traceId").append("<option value="+item.traceId+">"+  item.traceId  +"</option>");
+			                    $("#appName").append("<option value="+item.appName+">"+item.appName+"</option>");
+			                    $("#ip").append("<option value="+item.ip+">"+item.ip+"</option>");
+			                }
+			                form.render();
+			            }else {
+			                $("#traceId").empty();//清空下拉框
+			                $("#appName").empty();//清空下拉框
+			                $("#ip").empty();//清空下拉框
+			                $("#traceId").append("<option value=''>--请选择--</option>");
+			                $("#appName").append("<option value=''>--请选择--</option>");
+			                $("#ip").append("<option value='0'>--请选择--</option>");
+			                form.render();
+			            }
+			
+			              
+			                            
+			
+			  })
+			
+			
+			
+			
+			</script>
+		</div>
+	</body>
+</html>
