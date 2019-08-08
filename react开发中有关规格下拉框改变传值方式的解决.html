@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	<img src="图片1.png" />		
+	 <p>
+	 	如上图所示，规格下拉框中数据格式是这样的，但是后台接口要求渲染传过去的格式为：
+	 </p>
+	<p>
+		1.limits_cpu: 1000  <br />
+		2.limits_mem: 1024  <br />
+		这样的形式。  <br />
+	</p>
+
+<p>
+	解决办法：
+</p>
+
+<p>
+	<Form.Item style={{marginBottom:0}}>
+            <label className='lable_mr labelW'>规格</label>
+            <Select 
+                style={{width:'80%'}} 
+                defaultValue={limitsValue} 
+                onChange={this.limitsVal}
+                
+            >
+                 <Option value ='1CPU|1G'>1CPU|1G</Option>
+                <Option value ='1CPU|2G'>1CPU|2G</Option>
+                <Option value ='2CPU|2G'>2CPU|2G</Option>
+                <Option value ='2CPU|4G'>2CPU|4G</Option>
+
+            </Select>
+        </Form.Item>
+</p>
+
+<p>
+	limitsValue　默认值设置为：
+		  this.state={
+            limitsValue:'1CPU|1G',
+}
+</p>
+
+
+
+
+//规格下拉框的下拉触发事件
+    limitsVal = (value) =>{
+        const {limitsValue,limits_cpu,limits_mem} = this.state
+        this.setState({
+            limitsValue:value,
+        })
+        console.log(value);
+        <p style="background: #FFFACD;padding:10px">
+         switch (value) {
+            case '1CPU|1G':
+                this.setState({
+                    limits_cpu: 1000,
+                    limits_mem: 1024,
+                })
+                console.log(limits_cpu,limits_mem)
+                break;
+            case '1CPU|2G':
+                this.setState({
+                    limits_cpu: 1000,
+                    limits_mem: 2048,
+                })
+                console.log(limits_cpu,limits_mem)
+                break;
+            case '2CPU|2G':
+                this.setState({
+                    limits_cpu: 2000,
+                    limits_mem: 2048,
+                })
+                console.log(limits_cpu,limits_mem)
+                break;
+            case '2CPU|4G':
+                this.setState({
+                    limits_cpu: 2000,
+                    limits_mem: 4096,
+                })
+                console.log(limits_cpu,limits_mem)
+                break;
+        
+            default:
+                this.setState({
+                    limits_cpu: 1000,
+                    limits_mem: 1024,
+                })
+                break;
+        }
+        
+        </p>
+
+    }
+<p>
+	黄色代码部分为limitsValue　下拉值传到后台接品的一个转换
+</p>
+<p>
+	此时的这个下拉框没有涉及接口调用，里面下拉内容是固定写死的
+</p>
+
+
+	</body>
+</html>

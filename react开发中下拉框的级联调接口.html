@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>react开发中下拉框的级联调接口</title>
+	</head>
+	<body>
+		
+react开发中  ：
+
+1.  在下拉框触发 onChange 事件当中，改变状态的值不能通过 this.setState({value: value}) 这样的方式来做到，必须使用 this.state.value=value  这样的形式来让状态发生改变，获取到新的取值。
+
+  selTagg = (value) =>{
+      console.log(value)
+      let self = this;
+       self.state.image_repo= self.state.image_repo + value   －－ 此处为重点
+       console.log(self.state)
+   }
+
+
+
+2. 下拉框级联调接口
+  例： 镜像分支下拉：
+//镜像分支下拉框触发事件
+selVals = (value) =>{
+      
+        this.Tag(value);  //调取分支接口。传入镜像分支下拉框选中的值。
+}
+
+//分支tag下拉框触发事件
+selTagg = (value) =>{
+        let self = this;
+       self.state.image_repo= self.state.image_repo + value   //下拉后改变表单中的镜像名称，同时添加上此时下拉选中的值value
+  }
+
+
+//镜像分支 的下拉框
+   <Select 
+         style={{width:'80%'}} 
+         defaultValue={harborVal}    //下拉选默认值
+          onChange={this.selVals}   //触发下拉事件
+    
+ >
+{harborVals}   //遍历出来的Option  从接口harborPrefix()中被遍历出来
+
+</Select>
+
+//分支tag的下拉框
+<Select 
+   style={{width:'80%'}} 
+    defaultValue={tagVal} 
+    onChange={this.selTagg}
+ >
+     {tagVals}
+  
+</Select>
+
+
+
+//镜像分支接口调用，此接口是以页面载入过来就自己调用出来。使得数据自己渲染到下拉框中
+harborPrefix(){
+        const {harbor_prefix,harborVals} = this.state
+          //取出token
+            let toks = localStorage.getItem('token');
+            reqwest({
+                url: baseUrl + 'api/v1/images?prefix=' + harbor_prefix ,
+                method: 'get',
+                type: 'json',
+                headers:{
+                    "Authorization":'Token '+toks,  
+                }
+            }).then((data) => {
+                let branchs = data.branchs;
+                branchs.map((item,index)=>{
+                    
+           return 
+harborVals.push(<Option key={item} vlaue={item}>{item}</Option>)
+//通过map方法遍历出接口中取出来的数组，并把它们存入到下拉选Option中。
+  // harborVals 为存入下拉框中的新的数组的值 
+  })
+});
+}
+
+//Tag接口调用，可以传个 镜像分支名称的参数
+Tag = (harborVal)=>{
+            const {harbor_prefix,tagVals} = this.state
+
+            console.log(this.state)
+              //取出token
+                let toks = localStorage.getItem('token');
+                reqwest({
+                    url: baseUrl + 'api/v1/images?prefix=' + harbor_prefix +'&branch='+ harborVal ,
+                    method: 'get',
+                    type: 'json',
+                    headers:{
+                        "Authorization":'Token '+toks,  
+                    }
+                }).then((data) => {
+                    console.log(data)
+                    let tags = data.tags;
+                    this.setState({
+                        image_repo: data.harbor
+                    })
+                    tags.map((item,index)=>{  
+			       return 
+			//遍历的tag分支下拉框内容
+			tagVals.push(<Option key={item} vlaue={item}>{item}</Option>)
+			                   })
+			                });
+			          }
+	</body>
+</html>
